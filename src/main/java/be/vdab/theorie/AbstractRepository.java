@@ -4,16 +4,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class Main {
+public abstract class AbstractRepository {
     private static final String URL = "jdbc:mysql://localhost/tuincentrum";
     private static final String USER = "root";
     private static final String PASSWORD = "Polatalemdar571632";
 
-    public static void main(String[] args) {
-        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
-            System.out.println("Connectie open");
-        } catch (SQLException ex) {
-            ex.printStackTrace(System.err);
-        }
+    protected Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }
+
