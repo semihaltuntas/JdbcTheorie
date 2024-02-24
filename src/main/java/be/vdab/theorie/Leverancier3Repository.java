@@ -1,9 +1,7 @@
 package be.vdab.theorie;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,5 +26,40 @@ public class Leverancier3Repository extends AbstractRepository {
               */
         }
         return namen;
+    }
+
+    int findAantal() throws SQLException {
+        String sql = """
+                select count(*) as aantal
+                from leveranciers
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet result = statement.executeQuery();
+            result.next();
+            return result.getInt("aantal");
+        }
+    }
+
+    List<Leverancier3> findAll() throws SQLException {
+        List<Leverancier3> leveranciers = new ArrayList<>();
+        String sql = """
+                select id, naam, adres, postcode, woonplaats, sinds
+                from leveranciers
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                leveranciers.add(naarLeverancier(result));
+            }
+            return leveranciers;
+        }
+    }
+
+    private Leverancier3 naarLeverancier(ResultSet result) throws SQLException {
+        return new Leverancier3(result.getLong("id"), result.getString("naam"),
+                result.getString("adres"), result.getInt("postcode"),
+                result.getString("woonplaats"), result.getObject("sinds", LocalDate.class));
     }
 }
