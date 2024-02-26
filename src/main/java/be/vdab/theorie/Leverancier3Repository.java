@@ -62,4 +62,22 @@ public class Leverancier3Repository extends AbstractRepository {
                 result.getString("adres"), result.getInt("postcode"),
                 result.getString("woonplaats"), result.getObject("sinds", LocalDate.class));
     }
+
+    List<Leverancier3> findByWoonPlaats(String woonplaats) throws SQLException {
+        List<Leverancier3> leveranciers = new ArrayList<>();
+        String sql = """
+                select id,naam,adres,postcode,woonplaats,sinds
+                from leveranciers
+                where woonplaats = ?
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, woonplaats);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                leveranciers.add(naarLeverancier(result));
+            }
+            return leveranciers;
+        }
+    }
 }
