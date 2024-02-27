@@ -30,5 +30,13 @@ public class Main2PreparedStatement extends AbstractRepository {
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+        System.out.println("----Transectie------ ");
+        try{
+            repository.verhoogPrijzenBovenEnOnder100Euro();
+            System.out.println("Transectie goed werkt!");
+        }catch (SQLException ex){
+            ex.printStackTrace(System.err);
+        }
     }
 }

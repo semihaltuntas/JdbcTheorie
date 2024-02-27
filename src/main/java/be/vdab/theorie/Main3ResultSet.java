@@ -35,5 +35,19 @@ public class Main3ResultSet extends AbstractRepository {
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+        System.out.println("-----Een record lezen aan de hand van zijn id met Optional----");
+        System.out.println("Find by Id: ");
+        Scanner scanner1 = new Scanner(System.in);
+        int id = scanner1.nextInt();
+
+        try {
+            leverancierRepository
+                    .findById(id)
+                    .ifPresentOrElse(System.out::println,
+                            () -> System.out.println("Niet gevonden!"));
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 }

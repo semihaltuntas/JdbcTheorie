@@ -4,6 +4,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Leverancier3Repository extends AbstractRepository {
     List<String> findAllNamen() throws SQLException {
@@ -57,11 +58,7 @@ public class Leverancier3Repository extends AbstractRepository {
         }
     }
 
-    private Leverancier3 naarLeverancier(ResultSet result) throws SQLException {
-        return new Leverancier3(result.getLong("id"), result.getString("naam"),
-                result.getString("adres"), result.getInt("postcode"),
-                result.getString("woonplaats"), result.getObject("sinds", LocalDate.class));
-    }
+
 
     List<Leverancier3> findByWoonPlaats(String woonplaats) throws SQLException {
         List<Leverancier3> leveranciers = new ArrayList<>();
@@ -80,4 +77,25 @@ public class Leverancier3Repository extends AbstractRepository {
             return leveranciers;
         }
     }
+    Optional<Leverancier3> findById(long id) throws  SQLException{
+        String sql = """
+            select id,naam,adres,postcode,woonplaats,sinds
+                from leveranciers
+                where id = ?
+                """;
+        try(Connection connection = super.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)){
+            statement.setLong(1,id);
+            ResultSet result = statement.executeQuery();
+           return result.next() ? Optional.of(naarLeverancier(result)) : Optional.empty();
+
+        }
+    }
+    private Leverancier3 naarLeverancier(ResultSet result) throws SQLException {
+        return new Leverancier3(result.getLong("id"), result.getString("naam"),
+                result.getString("adres"), result.getInt("postcode"),
+                result.getString("woonplaats"), result.getObject("sinds", LocalDate.class));
+    }
+
+
 }

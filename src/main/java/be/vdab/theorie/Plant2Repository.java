@@ -35,6 +35,29 @@ public class Plant2Repository extends AbstractRepository {
             }
             return namen;
         }
+    }
 
+    void verhoogPrijzenBovenEnOnder100Euro() throws SQLException {
+        String sqlVanaf100 = """
+                update planten 
+                set prijs = prijs * 1.1
+                where prijs >= 100
+                """;
+        String sqlTot100 = """
+                update planten
+                set prijs = prijs * 1.05
+                where prijs < 100
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statementVanaf100 = connection.prepareStatement(sqlVanaf100);
+             PreparedStatement statementTot100 = connection.prepareStatement(sqlTot100)) {
+            /*auto commit false yapıyoruz cunku birbiryle iliskili ıkı durumu check etmemız gerekıyor.
+            auto commiti kapatıp kontrol ettıkten sonra sıkıntı yoksa commietleyip onaylıyoruz*/
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            statementVanaf100.executeUpdate();
+            statementTot100.executeUpdate();
+            connection.commit();
+        }
     }
 }
