@@ -26,7 +26,7 @@ public class Leverancier3 {
 
     @Override
     public String toString() {
-        return id + ":" + naam + " (" + woonplaats + ") " + postcode + " " + sinds + ": " +
+        return id + "->" + naam + " (" + woonplaats + ") " + postcode + " " + sinds + ": " +
                 getAantalJaarLeverancier() + " jaar";
     }
 }

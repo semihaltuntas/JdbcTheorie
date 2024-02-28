@@ -2,6 +2,8 @@ package be.vdab.theorie;
 
 import jdk.dynalink.linker.LinkerServices;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -58,6 +60,43 @@ public class Plant2Repository extends AbstractRepository {
             statementVanaf100.executeUpdate();
             statementTot100.executeUpdate();
             connection.commit();
+        }
+    }
+
+    void verlaagPrijs(long id, BigDecimal nieuwePrijs) throws SQLException {
+        String sqlUpdate = """
+                update planten
+                set prijs = ?
+                where id = ? and ? > prijs / 2
+                 """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statementUpdate = connection.prepareStatement(sqlUpdate)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            statementUpdate.setBigDecimal(1, nieuwePrijs);
+            statementUpdate.setLong(2, id);
+            statementUpdate.setBigDecimal(3, nieuwePrijs);
+            var aantalAangepasteRecords = statementUpdate.executeUpdate();
+            System.out.println(aantalAangepasteRecords);
+            if (aantalAangepasteRecords == 1) {
+                connection.commit();
+            } else {
+                String sqlSelect = """
+                        select id 
+                        from planten
+                        where id = ?
+                        """;
+                try (PreparedStatement statement = connection.prepareStatement(sqlSelect)) {
+                    statement.setLong(1, id);
+                    ResultSet result = statement.executeQuery();
+                    if (result.next()) {
+                        connection.rollback();
+                        throw new IllegalArgumentException("Prijs te laag");
+                    }
+                    connection.rollback();
+                    throw new IllegalArgumentException("Plant niet gevonden");
+                }
+            }
         }
     }
 }

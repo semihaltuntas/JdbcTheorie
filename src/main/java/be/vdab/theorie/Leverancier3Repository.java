@@ -59,7 +59,6 @@ public class Leverancier3Repository extends AbstractRepository {
     }
 
 
-
     List<Leverancier3> findByWoonPlaats(String woonplaats) throws SQLException {
         List<Leverancier3> leveranciers = new ArrayList<>();
         String sql = """
@@ -77,20 +76,109 @@ public class Leverancier3Repository extends AbstractRepository {
             return leveranciers;
         }
     }
-    Optional<Leverancier3> findById(long id) throws  SQLException{
+
+    Optional<Leverancier3> findById(long id) throws SQLException {
         String sql = """
-            select id,naam,adres,postcode,woonplaats,sinds
-                from leveranciers
-                where id = ?
-                """;
-        try(Connection connection = super.getConnection();
-        PreparedStatement statement = connection.prepareStatement(sql)){
-            statement.setLong(1,id);
+                select id,naam,adres,postcode,woonplaats,sinds
+                    from leveranciers
+                    where id = ?
+                    """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
             ResultSet result = statement.executeQuery();
-           return result.next() ? Optional.of(naarLeverancier(result)) : Optional.empty();
+            return result.next() ? Optional.of(naarLeverancier(result)) : Optional.empty();
 
         }
     }
+
+    List<Leverancier3> findBySinds2000() throws SQLException {
+        List<Leverancier3> leveranciers = new ArrayList<>();
+        String sql = """
+                 select id,naam,adres,postcode,woonplaats,sinds
+                from leveranciers
+                where sinds >= {d '2000-01-01'}
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                leveranciers.add(naarLeverancier(result));
+            }
+            connection.commit();
+            return leveranciers;
+        }
+    }
+    /*
+    * JDBC bevat datum en tijd functies die elk database merk correct verwerkt. De belangrijkste functies:
+•
+curdate() huidige datum
+•
+curtime() huidige tijd
+•
+now() huidige datum en tijd
+•
+dayofmonth(eenDatum) dag in de maand van eenDatum (getal tussen 1 en 31)
+•
+dayofweek(eenDatum) dag in de week van eenDatum (getal tussen 1: zondag en 7)
+•
+dayofyear(eenDatum) dag in het jaar van eenDatum (getal tussen 1 en 366)
+•
+month(eenDatum) maand in eenDatum (getal tussen 1 en 12)
+•
+week(eenDatum) week van eenDatum (getal tussen 1 en 53)
+•
+year(eenDatum) jaartal van eenDatum
+•
+hour(eenTijd) uur van eenTijd (getal tussen 0 en 23)
+•
+minute(eenTijd) minuten van eenTijd (getal tussen 0 en 59)
+•
+second(eenTijd) seconden van eenTijd (getal tussen 0 en 59)*/
+
+    List<Leverancier3> findBySindsVanaf(LocalDate datum) throws SQLException {
+        List<Leverancier3> leveranciers = new ArrayList<>();
+        String sql = """
+                  select id,naam,adres,postcode,woonplaats,sinds
+                from leveranciers
+                where sinds >= ?
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            statement.setObject(1, datum);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                leveranciers.add(naarLeverancier(result));
+            }
+            connection.commit();
+            return leveranciers;
+        }
+    }
+
+    List<Leverancier3> findLeverancierGewordenInHetJaar2000() throws SQLException {
+        List<Leverancier3> leveranciers = new ArrayList<>();
+        String sql = """
+                select id, naam, adres, postcode, woonplaats, sinds 
+                from leveranciers 
+                where {fn year(sinds)} = 2000
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                leveranciers.add(naarLeverancier(result));
+            }
+            connection.commit();
+            return leveranciers;
+        }
+    }
+
     private Leverancier3 naarLeverancier(ResultSet result) throws SQLException {
         return new Leverancier3(result.getLong("id"), result.getString("naam"),
                 result.getString("adres"), result.getInt("postcode"),

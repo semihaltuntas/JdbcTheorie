@@ -1,4 +1,4 @@
-package be.vdab.taken.Taak2Repository;
+package be.vdab.taken.taak2Repository;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

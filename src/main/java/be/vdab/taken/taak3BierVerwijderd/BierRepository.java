@@ -1,4 +1,4 @@
-package be.vdab.taken.Taak3BierVerwijderd;
+package be.vdab.taken.taak3BierVerwijderd;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

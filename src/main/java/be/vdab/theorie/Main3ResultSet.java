@@ -1,6 +1,10 @@
 package be.vdab.theorie;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Formatter;
 import java.util.Scanner;
 
 public class Main3ResultSet extends AbstractRepository {
@@ -49,5 +53,33 @@ public class Main3ResultSet extends AbstractRepository {
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+        System.out.println("-----Letterlijke datum of tijd in een SQL statement-----");
+
+        try {
+            leverancierRepository.findBySinds2000().forEach(System.out::println);
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
+        System.out.println("------Datum als parameter------");
+        System.out.println("Type een datum vanaf (dag/maand/jaar)");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d/M/y");
+        Scanner scanner2 = new Scanner(System.in);
+        LocalDate datum = LocalDate.parse(scanner2.nextLine(), formatter);
+
+        try {
+            leverancierRepository.findBySindsVanaf(datum).forEach(System.out::println);
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
+        System.out.println("------{fn naamVanDeFunctie(eventueleParameter)}------");
+        try {
+            leverancierRepository.findLeverancierGewordenInHetJaar2000().forEach(System.out::println);
+        } catch (SQLException ex) {
+            ex.printStackTrace(System.err);
+        }
+
     }
 }
