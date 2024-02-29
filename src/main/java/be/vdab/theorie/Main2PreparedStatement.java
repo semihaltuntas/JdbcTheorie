@@ -2,7 +2,9 @@ package be.vdab.theorie;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Main2PreparedStatement extends AbstractRepository {
 
@@ -40,21 +42,45 @@ public class Main2PreparedStatement extends AbstractRepository {
 //            ex.printStackTrace(System.err);
 //        }
 
-        System.out.println("--------LOCK----------");
+//        System.out.println("--------LOCK----------");
+//
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.println("Nummer Plant : ");
+//        long id = scanner.nextLong();
+//        System.out.println("Nieuwe Prijs :");
+//        BigDecimal newPrijs = scanner.nextBigDecimal();
+//
+//        try {
+//            repository.verlaagPrijs(id, newPrijs);
+//            System.out.println("Prijs aangepast");
+//        } catch (IllegalArgumentException ex) {
+//            System.out.println(ex.getMessage());
+//        } catch (SQLException ex) {
+//            ex.printStackTrace(System.err);
+//        }
 
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Nummer Plant : ");
-        long id = scanner.nextLong();
-        System.out.println("Nieuwe Prijs :");
-        BigDecimal newPrijs = scanner.nextBigDecimal();
+//        System.out.println("----- Het SQL keyword 'In' ------");
+//        Set<Long> ids = new HashSet<>();
+//        Scanner scanner1 = new Scanner(System.in);
+//        System.out.println("Nummer plant(0 om te stoppen):");
+//        int newId = scanner1.nextInt();
+//        while (newId != 0) {
+//            ids.add((long) newId);
+//            newId = scanner1.nextInt();
+//        }
+//        try {
+//            repository.findNamenByIds(ids).forEach(System.out::println);
+//        } catch (SQLException ex) {
+//            ex.printStackTrace(System.err);
+//        }
+        System.out.println("-------DTO (Data Transfer Object)--------");
 
         try {
-            repository.verlaagPrijs(id, newPrijs);
-            System.out.println("Prijs aangepast");
-        } catch (IllegalArgumentException ex) {
-            System.out.println(ex.getMessage());
+            repository.findRodePlantenEnHunleveranciers().forEach(System.out::println);
         } catch (SQLException ex) {
             ex.printStackTrace(System.err);
         }
+
+
     }
 }

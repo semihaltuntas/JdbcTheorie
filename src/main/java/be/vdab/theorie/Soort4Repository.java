@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 public class Soort4Repository extends AbstractRepository {
 
@@ -18,9 +19,9 @@ public class Soort4Repository extends AbstractRepository {
             statementInsert.setString(1, naam);
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
             /*
-            * TRANSACTION_READ_COMMITTED: Bu izolasyon seviyesinde, bir işlem yürütüldüğünde, diğer işlemler tarafından yapılan değişiklikler hemen görünür olmaz.
-            * Yani, bir işlem tarafından yapılan değişiklikler, yalnızca bu işlem tarafından gerçekleştirilen bir COMMIT işleminden sonra diğer işlemler tarafından görünür hale gelir.
-            * Bu izolasyon seviyesi, bir işlem başka bir işlemin yaptığı değişiklikleri sadece işlem tamamlandıktan sonra görmesini sağlar.*/
+             * TRANSACTION_READ_COMMITTED: Bu izolasyon seviyesinde, bir işlem yürütüldüğünde, diğer işlemler tarafından yapılan değişiklikler hemen görünür olmaz.
+             * Yani, bir işlem tarafından yapılan değişiklikler, yalnızca bu işlem tarafından gerçekleştirilen bir COMMIT işleminden sonra diğer işlemler tarafından görünür hale gelir.
+             * Bu izolasyon seviyesi, bir işlem başka bir işlemin yaptığı değişiklikleri sadece işlem tamamlandıktan sonra görmesini sağlar.*/
             connection.setAutoCommit(false);
             statementInsert.executeUpdate();
             ResultSet result = statementInsert.getGeneratedKeys();
@@ -56,6 +57,60 @@ return nieuweId;: Bu satır, yeni eklenen kaydın kimlik değerini döndürür.
 
 Bu kod, veritabanına yeni bir kayıt eklemek için kullanılır ve eklenen kaydın kimlik değerini geri döndürür. Aynı zamanda, bu işlemi bir transaksiyon içinde gerçekleştirir ve otomatik olarak oluşturulan anahtarları almak için PreparedStatement.RETURN_GENERATED_KEYS kullanır.*/
 
+    }
 
+    long create2(String naam) throws SQLException {
+        String sql = """
+                insert into soorten(naam)
+                values (?) 
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statementInsert = connection.prepareStatement(sql,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+            statementInsert.setString(1, naam);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            statementInsert.executeUpdate();
+            ResultSet result = statementInsert.getGeneratedKeys();
+            result.next();
+            long nieuweId = result.getLong(1);
+            connection.commit();
+            return nieuweId;
+        } catch (SQLException ex) {
+            String sqlSelect = """
+                    select id
+                    from soorten
+                    where naam = ?
+                    """;
+            try (Connection connection = super.getConnection();
+                 PreparedStatement statementSelect = connection.prepareStatement(sqlSelect)) {
+                statementSelect.setString(1, naam);
+                if (statementSelect.executeQuery().next()) {
+                    connection.rollback();
+                    throw new IllegalArgumentException("Soort bestaat al!");
+                }
+                connection.rollback();
+                throw ex;
+            }
+        }
+    }
+
+    void create3(List<String> namen) throws SQLException {
+        String sql = """
+                insert into soorten (naam)
+                values (?)
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statementInsert = connection.prepareStatement(sql,
+                     PreparedStatement.RETURN_GENERATED_KEYS)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            for (var naam : namen) {
+                statementInsert.setString(1, naam);
+                statementInsert.addBatch();
+            }
+            statementInsert.executeBatch();
+            connection.commit();
+        }
     }
 }

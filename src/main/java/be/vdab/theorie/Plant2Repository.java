@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class Plant2Repository extends AbstractRepository {
     int verhoogPrijzenMet10Procent(String naam) throws SQLException {
@@ -97,6 +98,58 @@ public class Plant2Repository extends AbstractRepository {
                     throw new IllegalArgumentException("Plant niet gevonden");
                 }
             }
+        }
+    }
+
+    List<String> findNamenByIds(Set<Long> ids) throws SQLException {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        List<String> namen = new ArrayList<>();
+        String sql = """
+                select naam
+                from planten
+                where id in (
+                """
+                + "?,".repeat(ids.size() - 1)
+                + "?)";
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            int index = 1;
+            for (long id : ids) {
+                statement.setLong(index++, id);
+                //System.out.println(statement);
+            }
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                namen.add(result.getString("naam"));
+            }
+            connection.commit();
+            return namen;
+        }
+    }
+
+    List<Plant2NaamEnLeveranciersNaam> findRodePlantenEnHunleveranciers() throws SQLException {
+        List<Plant2NaamEnLeveranciersNaam> list = new ArrayList<>();
+        String sql = """
+                select planten.naam as plantnaam, leveranciers.naam as leveranciersnaam
+                from planten inner join leveranciers
+                on planten.leverancierId=leveranciers.id
+                where kleur = 'rood'
+                """;
+        try (Connection connection = super.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            connection.setAutoCommit(false);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                list.add(new Plant2NaamEnLeveranciersNaam(result.getString("plantnaam"),
+                        result.getString("leveranciersnaam")));
+            }
+            connection.commit();
+            return list;
         }
     }
 }
