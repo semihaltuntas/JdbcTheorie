@@ -18,7 +18,7 @@ public class BrouwerRepository extends AbstractRepository {
                 set omzet = null
                 where id in(
                 """
-                + "? ".repeat(ids.size() - 1)
+                + "?,".repeat(ids.size() - 1)
                 + "?)";
         try (Connection connection = super.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -38,13 +38,13 @@ public class BrouwerRepository extends AbstractRepository {
         if (ids.isEmpty()) {
             return Set.of();
         }
-        var gevondenIds = new HashSet<Long>();
+        Set<Long> gevondenIds = new HashSet<>();
         String sql = """
                 select id 
                 from brouwers 
                 where id in(
                 """
-                + "? ".repeat(ids.size() - 1)
+                + "?,".repeat(ids.size() - 1)
                 + "?)";
         try (Connection connection = super.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {

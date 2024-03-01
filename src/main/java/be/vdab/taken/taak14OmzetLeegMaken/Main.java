@@ -27,7 +27,7 @@ public class Main {
     public static void main(String[] args) {
         var ids = vraagIds();
         if (!ids.isEmpty()) {
-            var repository = new BrouwerRepository();
+            BrouwerRepository repository = new BrouwerRepository();
             try {
                 if (repository.maakOmzetLeeg(ids) != ids.size()) {
                     System.out.println("Niet gevonden ids:");
